@@ -15,3 +15,6 @@ sudo emacs /etc/snmp/snmpd.conf
 # Reinicias servicio y verificas su funcionamiento
 sudo systemctl restart snmpd
 sudo systemctl status snmpd
+
+# Medidas adicionales, quitar el firewall para que permita tráfico snmp
+sudo iptables -A INPUT -p udp --dport 161 -j ACCEPT
