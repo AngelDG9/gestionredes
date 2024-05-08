@@ -23,15 +23,14 @@ def snmp_get(ip, oid):
     )
 
     if errorIndication:
-        #print('Error al obtener el valor de OID %s en %s: %s' % (oid, ip, errorIndication))
-        varBinds[1]="Error en solicitud: "+errorIndication
+        print('Error al obtener el valor de OID %s en %s: %s' % (oid, ip, errorIndication))
+        #varBinds[1]="Error en solicitud: "+str(errorIndication)
     elif errorStatus:
-        #print('Error al obtener el valor de OID %s en %s: %s' % (oid, ip, errorStatus))
-        varBinds[1]="Error en solicitud: "+errorIndication
+        print('Error al obtener el valor de OID %s en %s: %s' % (oid, ip, errorStatus))
+        #varBinds[1]="Error en solicitud: "+str(errorIndication)
     else:
         for varBind in varBinds:
             print('Valor de OID %s en %s: %s' % (oid, ip, varBind[1]))
-        return varBinds
 
 
 def set_snmp(ip, oid, value):
@@ -152,11 +151,17 @@ def map(comando_telegram):
 
 #MAIN
 # Ejemplo de escaneo de red - netmap
+'''
 segmento_red = "192.168.138"
 ips=netmap(segmento_red)
 
 for ip in ips:
     print(ip)
+'''
 
 # Ejemplo de consulta - get
-
+# snmp_get("192.168.234.140","1.3.6.1.2.1.1.6")
+resultado_ping = subprocess.run(['ping', '-c', '1', '-W', str(0.5), "192.168.234.140"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+if resultado_ping.returncode == 0:
+    print("exito")
+else: print("fracaso")
