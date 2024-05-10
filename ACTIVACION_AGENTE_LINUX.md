@@ -6,15 +6,19 @@ apt-get install emacs
 # Acceso a fichero configuración snmpd.conf
 emacs /etc/snmp/snmpd.conf
 
-# La comunidad debe estar en public
-    rocommunity public
+# Definir public como comunidad rw o ro
+    cambia "rocommunity public" por "rwcommunity public default -V all"
 
 # Esto es para activar la MIB-2, debe estar descomentado
-    view   systemonly  included   .1.3.6.1.2.1.1
-    view   systemonly  included   .1.3.6.1.2.1.25.1
+    view all included .1
+    view all included .1.3.6.1.2.1.1
+    view all included .1.3.6.1.2.1.25.1
 
 # Pon desde donde quieres escuchar (creo que la por defecto vale, pero conviene cambiarla)
     AgentAddress udp:ip_agent:161
+
+# Comenta todas las variables del fichero
+	Por ejemplo #sysLocation
 
 # Acceso a fichero configuración snmp.conf
 emacs /etc/snmp/snmpd.conf
