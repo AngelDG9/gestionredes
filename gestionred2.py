@@ -63,7 +63,8 @@ def set(oid, ip, value):
 def netmap(rango):
     # te saca los agentes snmp disponibles y su sistema operativo (en una lista de ip+so)
     # formato de rango es x.x.x.
-    i=33
+    # queda mejorarlo para que sea más rápido (creo que podriamos hacerlo con varios hilos o modificando el timeout de get, aunque esto ultimo lo he intentado y no me ha funcionado bien)
+    i=1
     lista_agentes=[]
     oid_sysDescr='1.3.6.1.2.1.1.1.0'
     while(i<255):
@@ -101,14 +102,14 @@ pollId = 7
 
 
 # probando poll
-resp = poll(oid_sysDescr,ip,pollId,interval)
+# resp = poll(oid_sysDescr,ip,pollId,interval)
 
 
 # probando get
-# descr = get(oid_sysDescr,ip) # probando get
-# print(descr)
+descr = get(oid_sysDescr,ip) # probando get
+print(descr)
 
 
 # probando netmap
-#lista_agentes = netmap(rango)
-#print(lista_agentes)
+lista_agentes = netmap(rango)
+print(lista_agentes)
