@@ -1,6 +1,3 @@
-import easysnmp
-from easysnmp import Session
-from easysnmp import snmp_get, snmp_set, snmp_walk
 from pysnmp.hlapi import *
 
 import time
@@ -32,6 +29,8 @@ def get(oid,ip):
 
 
 def poll(oid,ip,pollId,interval):
+    # hace muestreo periodico de una variable
+    # debe estar en hilo separado
     while(True):
         resp=get(oid,ip)
         print("Poll "+str(pollId)+": "+resp) # Aqui poner mandar_a_telegram("Poll "+str(pollId)+": "+resp))
@@ -39,6 +38,23 @@ def poll(oid,ip,pollId,interval):
         
         
 
+def alarm(oid,ip,alarmId,thresh,text):
+    # alarma, si se supera thresh se manda text
+    # debe estar en hilo separado
+    # solo debe permitir oids con valores numericos
+    interval = 5 # por defecto ponemos 5s de sondeo para la alarma
+    thresh_int=int(thresh)
+    
+    while(True):
+        resp=get(oid,ip)
+        resp_int=int(resp)
+        if (resp_int > thresh_int):
+            print("Alarm "+str(alarmId)+": "+text) # Aqui poner mandar_a_telegram("Alarm "+str(alarmId)+": "+text))
+            break # se elimina la alarma (podemos cambiarlo)
+        time.sleep(interval)
+            
+            
+        
 def set(oid, ip, value):
     # cambia valor de oid de esa ip
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -88,12 +104,17 @@ def netmap(rango):
 
 
 # MAIN
+# valores para probar
 oid_sysLocation='1.3.6.1.2.1.1.6.0'
 oid_sysDescr='1.3.6.1.2.1.1.1.0'
+oid_sysUpTime='1.3.6.1.2.1.1.3.0'
 ip='192.168.138.134'
 rango='192.168.138.'
 interval = 3
 pollId = 7
+alarmId = 5
+thresh=180000
+text="Tiempo de encendido superior a "+str(thresh)
 
 
 # probando set
@@ -106,10 +127,14 @@ pollId = 7
 
 
 # probando get
-descr = get(oid_sysDescr,ip) # probando get
+descr = get(oid_sysUpTime,ip) # probando get
 print(descr)
 
 
 # probando netmap
-lista_agentes = netmap(rango)
-print(lista_agentes)
+# lista_agentes = netmap(rango)
+# print(lista_agentes)
+
+
+# probando alarm
+alarm(oid_sysUpTime,ip,alarmId,thresh,text)
