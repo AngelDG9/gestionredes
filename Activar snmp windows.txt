@@ -1,0 +1,8 @@
+1)Administrar Características opcionales > Agregar una caracteristica > Añadir "Proveedor WMI de SNMP" y "Protocolo simple de administracion de redes"
+2)Servicios >  Servicio SNMP > Propiedades 
+•	Configuración del agente:
+o	Contacto y ubicación.
+o	Servicio: marcar Internet, Aplicaciones, Extremo a extremo, Vínculo de datos y Subred (en definitiva, todas menos “Físico”).
+•	Configuración de seguridad:
+o	Comunidad: añadir la comunidad public con permisos de lectura y escritura.
+o	Aceptar paquetes de cualquier host
