@@ -7,10 +7,11 @@ import threading
 import sys
 
 
-# DICCIONARIO PARA HILOS (DE AMBITO GLOBAL, COMPARTIDA POR TODOS LOS HILOS)
+# DICCIONARIOS (DE AMBITO GLOBAL, COMPARTIDA POR TODOS LOS HILOS)
 
 hilos_poll = {}
 hilos_alarm = {}
+
 
 
 # FUNCIONES
@@ -159,20 +160,87 @@ def stopalarm(alarmId):
     else:
         print("No se encontró ninguna alarma con el ID "+str(alarmId))
 
-def map(msg):
+def map(ip,msg):
     # funcion traductora entre objeto telegram y oid
     oid=""
-    # para mib-2
+
+    # primero veo cual sistema operativo tiene esa ip
+    so=""
+    respuesta=get('1.3.6.1.2.1.1.1.0',ip)
+    if "linux" in respuesta.lower():
+        so = "linux"
+
+    if "windows" in respuesta.lower():
+        so = "windows"
+    
+    # compruebo mib-2
     if (msg=="name"):
         oid="1.3.6.1.2.1.1.5.0"
     elif (msg=="location"):
         oid="1.3.6.1.2.1.1.6.0"
     elif (msg=="description"):
-        oid="1.3.6.1.2.1.1.1."
+        oid="1.3.6.1.2.1.1.1.0"
     elif (msg=="uptime"):
         oid="1.3.6.1.2.1.1.3.0"
+    elif (msg=="ip"):
+        oid="lo que sea"
+
+    # compruebo mibs rendimiento, hay que diferenciar entre linux y windows (hay que meter oids correspondientes)
+    elif (msg=="cpu"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    elif (msg=="totaldisk"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    elif (msg=="disk"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    elif (msg=="totalram"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+            
+    elif (msg=="ram"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    elif (msg=="numprocess"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    elif (msg=="maxprocess"):
+        if (so=="linux"):
+            oid="lo que sea"
+        else:
+            oid="lo que sea"
+
+    # estos o son solo de windows o solo de linux
+    elif (msg=="namesprocess"):
+        oid="lo que sea"
+
+    elif (msg=="os"):
+        oid="lo que sea"
+
+    elif (msg=="software"):
+        oid="lo que sea"
+        
     else:
         return "Error: el objeto introducido no es correcto"
+    
     return oid
 
 
@@ -234,8 +302,11 @@ print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
 
 
 # probando map
-result = map("name")
+result = map(ip,"name")
 print(result)
 
-result = map("keclwegfiwegf")
+result = map(ip,"keclwegfiwegf")
+print(result)
+
+result = map(ip,"disk")
 print(result)
