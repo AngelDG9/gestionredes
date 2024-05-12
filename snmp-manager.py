@@ -4,6 +4,15 @@ import time
 
 import threading
 
+import sys
+
+
+# DICCIONARIO PARA HILOS (DE AMBITO GLOBAL, COMPARTIDA POR TODOS LOS HILOS)
+
+hilos_poll = {}
+hilos_alarm = {}
+
+
 # FUNCIONES
 
 # el oid es de tipo string y debe llevar .0, la ip tambien string
@@ -15,8 +24,10 @@ def separar_en_hilo(func):
     def wrapper(*args, **kwargs):
         thread = threading.Thread(target=func, args=args, kwargs=kwargs)
         thread.start()
+        
     return wrapper
 
+    
 
 def get(oid,ip):
     # saca valor de oid de esa ip
@@ -44,10 +55,20 @@ def get(oid,ip):
 def poll(oid,ip,pollId,interval):
     # hace muestreo periodico de una variable
     # debe estar en hilo separado
+    thread=threading.current_thread()
+    hilos_poll[pollId] = [thread,False]
+    print("Añadido hilo de poll: "+str(pollId))
+    
     while(True):
         resp=get(oid,ip)
         print("Poll "+str(pollId)+": "+resp) # Aqui poner mandar_a_telegram("Poll "+str(pollId)+": "+resp))
         time.sleep(interval)
+
+        dupla=hilos_poll[pollId] # para que se pueda terminar
+        if (dupla[1])==True:
+            del hilos_poll[pollId] # elimino ese hilo del diccionario
+            print("Poll con ID: "+str(pollId)+" finalizado.")
+            sys.exit()
         
         
 @separar_en_hilo
@@ -55,6 +76,10 @@ def alarm(oid,ip,alarmId,thresh,text):
     # alarma, si se supera thresh se manda text
     # debe estar en hilo separado
     # solo debe permitir oids con valores numericos
+    thread=threading.current_thread()
+    hilos_alarm[alarmId] = [thread,False]
+    print("Añadido hilo de alarma: "+str(alarmId))
+    
     interval = 5 # por defecto ponemos 5s de sondeo para la alarma
     thresh_int=int(thresh)
     
@@ -65,7 +90,12 @@ def alarm(oid,ip,alarmId,thresh,text):
             print("Alarm "+str(alarmId)+": "+text) # Aqui poner mandar_a_telegram("Alarm "+str(alarmId)+": "+text))
             break # se elimina la alarma (podemos cambiarlo)
         time.sleep(interval)
-            
+
+        dupla=hilos_alarm[alarmId] # para que se pueda terminar
+        if (dupla[1])==True:
+            del hilos_alarm[alarmId] # elimino ese hilo del diccionario
+            print("Alarma con ID: "+str(alarmId)+" finalizada.")
+            sys.exit()
             
         
 def set(oid, ip, value):
@@ -112,7 +142,23 @@ def netmap(rango):
    
     print(lista_agentes) # mandar_a_telegram(lista_agentes), quizas hay que separar los elementos para que no se vean juntos
         
+def stoppoll(pollId):
+    # elimina poll con esa id
+    if (pollId in hilos_poll):
+        dupla=hilos_poll[pollId]
+        dupla[1]=True # Termino hilo
+    else:
+        print("No se encontró ningun poll con el ID "+str(pollId))
 
+
+def stopalarm(alarmId):
+    # elimina alarm con esa id
+    if (alarmId in hilos_alarm):
+        dupla=hilos_alarm[alarmId]
+        dupla[1]=True # Termino hilo
+    else:
+        print("No se encontró ninguna alarma con el ID "+str(alarmId))
+        
 
 
 # MAIN
@@ -125,7 +171,7 @@ rango='192.168.138.'
 interval = 3
 pollId = 7
 alarmId = 5
-thresh=120000
+thresh=1200000
 text="Tiempo de encendido superior a "+str(thresh)
 
 
@@ -152,8 +198,19 @@ text="Tiempo de encendido superior a "+str(thresh)
 
 
 # probando hilos de poll, alarm y netmap
-netmap(rango)
-poll(oid_sysUpTime,ip,pollId,interval)
-alarm(oid_sysUpTime,ip,alarmId,thresh,text)
+# netmap(rango)
+# poll(oid_sysUpTime,ip,pollId,interval)
+# alarm(oid_sysUpTime,ip,alarmId,thresh,text)
 
-print("ejecutando hilos...")
+
+# probando stopalarm y stoppoll
+poll(oid_sysUpTime,ip,1,5)
+poll(oid_sysLocation,ip,2,6)
+alarm(oid_sysUpTime,ip,8,thresh,"aviso de alarma")
+print("HILOS POLL ACTUALES: "+str(hilos_poll))
+print("HILOS ALARM  ACTUALES: "+str(hilos_alarm))
+stoppoll(1)
+stopalarm(8)
+time.sleep(10)
+print("HILOS POLL  TRAS ELIMINAR 1: "+str(hilos_poll))
+print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
