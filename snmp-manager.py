@@ -158,7 +158,22 @@ def stopalarm(alarmId):
         dupla[1]=True # Termino hilo
     else:
         print("No se encontró ninguna alarma con el ID "+str(alarmId))
-        
+
+def map(msg):
+    # funcion traductora entre objeto telegram y oid
+    oid=""
+    # para mib-2
+    if (msg=="name"):
+        oid="1.3.6.1.2.1.1.5.0"
+    elif (msg=="location"):
+        oid="1.3.6.1.2.1.1.6.0"
+    elif (msg=="description"):
+        oid="1.3.6.1.2.1.1.1."
+    elif (msg=="uptime"):
+        oid="1.3.6.1.2.1.1.3.0"
+    else:
+        return "Error: el objeto introducido no es correcto"
+    return oid
 
 
 # MAIN
@@ -204,6 +219,7 @@ text="Tiempo de encendido superior a "+str(thresh)
 
 
 # probando stopalarm y stoppoll
+'''
 poll(oid_sysUpTime,ip,1,5)
 poll(oid_sysLocation,ip,2,6)
 alarm(oid_sysUpTime,ip,8,thresh,"aviso de alarma")
@@ -214,3 +230,12 @@ stopalarm(8)
 time.sleep(10)
 print("HILOS POLL  TRAS ELIMINAR 1: "+str(hilos_poll))
 print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
+'''
+
+
+# probando map
+result = map("name")
+print(result)
+
+result = map("keclwegfiwegf")
+print(result)
