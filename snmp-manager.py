@@ -2,9 +2,21 @@ from pysnmp.hlapi import *
 
 import time
 
+import threading
+
 # FUNCIONES
 
 # el oid es de tipo string y debe llevar .0, la ip tambien string
+
+
+
+def separar_en_hilo(func):
+    # funcion decoradora que permite que las funciones poll,alarm y netmap se ejecuten en hilos separados, hay que poner el @
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+        thread.start()
+    return wrapper
+
 
 def get(oid,ip):
     # saca valor de oid de esa ip
@@ -28,6 +40,7 @@ def get(oid,ip):
     return str(respuesta)
 
 
+@separar_en_hilo
 def poll(oid,ip,pollId,interval):
     # hace muestreo periodico de una variable
     # debe estar en hilo separado
@@ -37,7 +50,7 @@ def poll(oid,ip,pollId,interval):
         time.sleep(interval)
         
         
-
+@separar_en_hilo
 def alarm(oid,ip,alarmId,thresh,text):
     # alarma, si se supera thresh se manda text
     # debe estar en hilo separado
@@ -75,7 +88,7 @@ def set(oid, ip, value):
     # mandar_a_telegram("Reply: "+str(respuesta))
     return respuesta
 
-
+@separar_en_hilo
 def netmap(rango):
     # te saca los agentes snmp disponibles y su sistema operativo (en una lista de ip+so)
     # formato de rango es x.x.x.
@@ -96,9 +109,8 @@ def netmap(rango):
             lista_agentes.append(ip+": Windows")
             print("Añadido windows en "+ip)
         i=i+1
-
-    # mandar_a_telegram(lista_agentes), quizas hay que separar los elementos para que no se vean juntos
-    return lista_agentes
+   
+    print(lista_agentes) # mandar_a_telegram(lista_agentes), quizas hay que separar los elementos para que no se vean juntos
         
 
 
@@ -113,7 +125,7 @@ rango='192.168.138.'
 interval = 3
 pollId = 7
 alarmId = 5
-thresh=180000
+thresh=120000
 text="Tiempo de encendido superior a "+str(thresh)
 
 
@@ -123,18 +135,25 @@ text="Tiempo de encendido superior a "+str(thresh)
 
 
 # probando poll
-# resp = poll(oid_sysDescr,ip,pollId,interval)
+# poll(oid_sysDescr,ip,pollId,interval)
 
 
 # probando get
-descr = get(oid_sysUpTime,ip) # probando get
-print(descr)
+# descr = get(oid_sysUpTime,ip) # probando get
+# print(descr)
 
 
 # probando netmap
-# lista_agentes = netmap(rango)
-# print(lista_agentes)
+# netmap(rango)
 
 
 # probando alarm
+# alarm(oid_sysUpTime,ip,alarmId,thresh,text)
+
+
+# probando hilos de poll, alarm y netmap
+netmap(rango)
+poll(oid_sysUpTime,ip,pollId,interval)
 alarm(oid_sysUpTime,ip,alarmId,thresh,text)
+
+print("ejecutando hilos...")
