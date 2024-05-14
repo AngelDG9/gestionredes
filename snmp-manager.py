@@ -277,7 +277,7 @@ oid_sysDescr='1.3.6.1.2.1.1.1.0'
 oid_sysUpTime='1.3.6.1.2.1.1.3.0'
 oid_ipAddrTable='1.3.6.1.2.1.4.20'
 #ip='192.168.138.134' # mi linux
-ip='192.168.234.1' # mi windows
+ip='192.168.138.1' # mi windows
 rango='192.168.138.'
 interval = 3
 pollId = 7
@@ -285,19 +285,18 @@ alarmId = 5
 thresh=1200000
 text="Tiempo de encendido superior a "+str(thresh)
 
-
-# probando set
-# respuesta_set = set(oid_sysDescr, ip, 'Linux Lubuntu')
-# print("Reply: "+respuesta_set)
-
-
 # probando poll
 # poll(oid_sysDescr,ip,pollId,interval)
 
 
 # probando get
-# descr = get(oid_sysUpTime,ip) # probando get
-# print(descr)
+descr = get(oid_sysLocation,ip) # probando get
+print(descr)
+
+
+# probando set
+# respuesta_set = set(oid_sysLocation, ip, 'Un lugar cualquiera')
+# print("Reply: "+respuesta_set)
 
 
 # probando netmap
@@ -339,5 +338,5 @@ print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
 
 
 # probando walk_table
-resultado = walk_table(oid_ipAddrTable,ip)
-print(resultado)
+# resultado = walk_table(oid_ipAddrTable,ip)
+# print(resultado)
