@@ -52,6 +52,32 @@ def get(oid,ip):
     return str(respuesta)
 
 
+
+def walk_table(oid, ip):
+    # recorre una tabla entera (pasar la oid de la tabla)
+    respuesta=[]
+    for errorIndication, errorStatus, errorIndex, varBinds in nextCmd(
+            SnmpEngine(),
+            CommunityData('public', mpModel=0),
+            UdpTransportTarget((ip, 161)),
+            ContextData(),
+            ObjectType(ObjectIdentity(oid)),
+            lexicographicMode=False
+    ):
+        if errorIndication:
+            respuesta.append(errorIndication)
+        elif errorStatus:
+            respuesta.append(errorStatus)
+        elif errorIndex:
+            respuesta.append(errorIndex)
+        else:
+            for varBind in varBinds:
+                respuesta.append(str(varBind[1].prettyPrint()))
+
+    return respuesta
+        
+
+
 @separar_en_hilo
 def poll(oid,ip,pollId,interval):
     # hace muestreo periodico de una variable
@@ -249,7 +275,9 @@ def map(ip,msg):
 oid_sysLocation='1.3.6.1.2.1.1.6.0'
 oid_sysDescr='1.3.6.1.2.1.1.1.0'
 oid_sysUpTime='1.3.6.1.2.1.1.3.0'
-ip='192.168.138.134'
+oid_ipAddrTable='1.3.6.1.2.1.4.20'
+#ip='192.168.138.134' # mi linux
+ip='192.168.234.1' # mi windows
 rango='192.168.138.'
 interval = 3
 pollId = 7
@@ -259,7 +287,7 @@ text="Tiempo de encendido superior a "+str(thresh)
 
 
 # probando set
-# respuesta_set = set(oid_sysDescr, ip, 'Un maravilloso lugar')
+# respuesta_set = set(oid_sysDescr, ip, 'Linux Lubuntu')
 # print("Reply: "+respuesta_set)
 
 
@@ -302,11 +330,14 @@ print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
 
 
 # probando map
-result = map(ip,"name")
-print(result)
+# result = map(ip,"name")
+# print(result)
+# result = map(ip,"keclwegfiwegf")
+# print(result)
+# result = map(ip,"disk")
+# print(result)
 
-result = map(ip,"keclwegfiwegf")
-print(result)
 
-result = map(ip,"disk")
-print(result)
+# probando walk_table
+resultado = walk_table(oid_ipAddrTable,ip)
+print(resultado)

@@ -1,13 +1,17 @@
 # Instalacion dependencias
 sudo su
 apt-get install snmpd
+apt-get install snmp
 apt-get install emacs
+
+# instalar todas las mibs
+apt-get install snmp-mibs-downloader
 
 # Acceso a fichero configuración snmpd.conf
 emacs /etc/snmp/snmpd.conf
 
 # Definir public como comunidad rw o ro
-    cambia "rocommunity public" por "rwcommunity public default -V all"
+    cambia "rocommunity public" por "rwcommunity public default"
 
 # Esto es para activar la MIB-2, debe estar descomentado
     view all included .1
