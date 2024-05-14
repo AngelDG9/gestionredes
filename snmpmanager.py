@@ -1,5 +1,5 @@
 from pysnmp.hlapi import *
-
+from main import *
 import time
 
 import threading
@@ -30,7 +30,7 @@ def separar_en_hilo(func):
 
     
 
-def get(oid,ip):
+def pruebaget(oid,ip):
     # saca valor de oid de esa ip
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
@@ -79,7 +79,7 @@ def walk_table(oid, ip):
 
 
 @separar_en_hilo
-def poll(oid,ip,pollId,interval):
+def pruebapoll(oid,ip,pollId,interval):
     # hace muestreo periodico de una variable
     # debe estar en hilo separado
     thread=threading.current_thread()
@@ -87,7 +87,7 @@ def poll(oid,ip,pollId,interval):
     print("Añadido hilo de poll: "+str(pollId))
     
     while(True):
-        resp=get(oid,ip)
+        resp=pruebaget(oid,ip)
         print("Poll "+str(pollId)+": "+resp) # Aqui poner mandar_a_telegram("Poll "+str(pollId)+": "+resp))
         time.sleep(interval)
 
@@ -99,7 +99,7 @@ def poll(oid,ip,pollId,interval):
         
         
 @separar_en_hilo
-def alarm(oid,ip,alarmId,thresh,text):
+def pruebaalarm(oid,ip,alarmId,thresh,text):
     # alarma, si se supera thresh se manda text
     # debe estar en hilo separado
     # solo debe permitir oids con valores numericos
@@ -125,7 +125,7 @@ def alarm(oid,ip,alarmId,thresh,text):
             sys.exit()
             
         
-def set(oid, ip, value):
+def pruebaset(oid, ip, value):
     # cambia valor de oid de esa ip
     errorIndication, errorStatus, errorIndex, varBinds = next(
         setCmd(SnmpEngine(),
@@ -146,7 +146,7 @@ def set(oid, ip, value):
     return respuesta
 
 @separar_en_hilo
-def netmap(rango):
+def pruebanetmap(rango):
     # te saca los agentes snmp disponibles y su sistema operativo (en una lista de ip+so)
     # formato de rango es x.x.x.
     # queda mejorarlo para que sea más rápido (creo que podriamos hacerlo con varios hilos o modificando el timeout de get, aunque esto ultimo lo he intentado y no me ha funcionado bien)
@@ -209,14 +209,14 @@ def map(ip,msg):
     elif (msg=="uptime"):
         oid="1.3.6.1.2.1.1.3.0"
     elif (msg=="ip"):
-        oid="lo que sea"
+        oid="1.3.6.1.2.1.4.20"
 
     # compruebo mibs rendimiento, hay que diferenciar entre linux y windows (hay que meter oids correspondientes)
     elif (msg=="cpu"):
         if (so=="linux"):
-            oid="lo que sea"
+            oid="1.3.6.1.4.1.2021.11.53"
         else:
-            oid="lo que sea"
+            oid="1.3.6.1.2.1.25.3.3.1.2"
 
     elif (msg=="totaldisk"):
         if (so=="linux"):
@@ -226,9 +226,9 @@ def map(ip,msg):
 
     elif (msg=="disk"):
         if (so=="linux"):
-            oid="lo que sea"
+            oid="1.3.6.1.4.1.2021.9"
         else:
-            oid="lo que sea"
+            oid="1.3.6.1.2.1.25.2.3"
 
     elif (msg=="totalram"):
         if (so=="linux"):
@@ -238,31 +238,31 @@ def map(ip,msg):
             
     elif (msg=="ram"):
         if (so=="linux"):
-            oid="lo que sea"
+            oid="1.3.6.1.4.1.2021.4.5.0"
         else:
-            oid="lo que sea"
+            oid=".1.3.6.1.2.1.25.25.2.2.0"
 
     elif (msg=="numprocess"):
         if (so=="linux"):
-            oid="lo que sea"
+            oid="1.3.6.1.4.1.2021.2.1.5.0"
         else:
-            oid="lo que sea"
+            oid="1.3.6.1.2.1.25.1.6.0"
 
     elif (msg=="maxprocess"):
         if (so=="linux"):
-            oid="lo que sea"
+            oid="1.3.6.1.4.1.2021.2.1.4.0"
         else:
-            oid="lo que sea"
+            oid="1.3.6.1.2.1.25.1.7.0"
 
     # estos o son solo de windows o solo de linux
     elif (msg=="namesprocess"):
-        oid="lo que sea"
+        oid="1.3.6.1.4.1.2021.2.1.2.0"
 
     elif (msg=="os"):
-        oid="lo que sea"
+        oid="1.3.6.1.2.1.25.4.1.0"
 
     elif (msg=="software"):
-        oid="lo que sea"
+        oid="1.3.6.1.2.1.25.4.2.1.2"
         
     else:
         return "Error: el objeto introducido no es correcto"
@@ -277,7 +277,7 @@ oid_sysDescr='1.3.6.1.2.1.1.1.0'
 oid_sysUpTime='1.3.6.1.2.1.1.3.0'
 oid_ipAddrTable='1.3.6.1.2.1.4.20'
 #ip='192.168.138.134' # mi linux
-ip='192.168.138.1' # mi windows
+ip='192.168.234.1' # mi windows
 rango='192.168.138.'
 interval = 3
 pollId = 7
@@ -285,18 +285,19 @@ alarmId = 5
 thresh=1200000
 text="Tiempo de encendido superior a "+str(thresh)
 
+
+# probando set
+# respuesta_set = set(oid_sysDescr, ip, 'Linux Lubuntu')
+# print("Reply: "+respuesta_set)
+
+
 # probando poll
 # poll(oid_sysDescr,ip,pollId,interval)
 
 
 # probando get
-descr = get(oid_sysLocation,ip) # probando get
-print(descr)
-
-
-# probando set
-# respuesta_set = set(oid_sysLocation, ip, 'Un lugar cualquiera')
-# print("Reply: "+respuesta_set)
+# descr = get(oid_sysUpTime,ip) # probando get
+# print(descr)
 
 
 # probando netmap
@@ -338,5 +339,5 @@ print("HILOS ALARM TRAS ELIMINAR 1: "+str(hilos_alarm))
 
 
 # probando walk_table
-# resultado = walk_table(oid_ipAddrTable,ip)
-# print(resultado)
+resultado = walk_table(oid_ipAddrTable,ip)
+print(resultado)
